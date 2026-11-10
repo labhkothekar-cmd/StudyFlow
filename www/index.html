@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-accent="school" data-style="campus">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="StudyFlow — tasks, calendar, notes and a focus timer in one beautiful study app.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#e9ecf5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b0b10" media="(prefers-color-scheme: dark)">
+  <title>StudyFlow</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <!-- Apply saved theme before first paint to avoid a flash -->
+  <script>
+    (function () {
+      try {
+        var sid = localStorage.getItem('studyflow.session') || sessionStorage.getItem('studyflow.session') || '';
+        var key = sid && sid !== 'guest' ? 'studyflow.v1.' + sid : 'studyflow.v1';
+        var s = (JSON.parse(localStorage.getItem(key)) || {}).settings || {};
+        var dark = s.theme === 'dark' || ((!s.theme || s.theme === 'auto') && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        if (s.accent) document.documentElement.dataset.accent = s.accent;
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Ambient gradient backdrop (what the glass blurs) -->
+  <div class="backdrop" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+  </div>
+
+  <!-- Icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+      <symbol id="i-note" viewBox="0 0 24 24"><path d="M6 3.5h9l4 4V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14.5 3.5V8H19M8.5 13h7M8.5 16.5h5"/></symbol>
+      <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5"/></symbol>
+      <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v6a4 4 0 0 1-8 0V4ZM8 6H4.5A3 3 0 0 0 8 10M16 6h3.5A3 3 0 0 1 16 10M12 14v4M8.5 20.5h7"/></symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.7-6.5-6.2 0-3.3 2.4-5 3.4-8.3 2 1 3 2.6 3.1 4.3 1-.7 1.6-1.9 1.7-3.3 2.6 2 4.3 4.5 4.3 7.3 0 3.4-2.5 6.2-6 6.2Z"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.5-5.8M4 4v4.5h4.5"/></symbol>
+      <symbol id="i-skip" viewBox="0 0 24 24"><path d="M6 5.5v13l9-6.5-9-6.5Z" fill="currentColor"/><path d="M18.5 5.5v13"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7"/></symbol>
+      <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9.5 5 7 7-7 7"/></symbol>
+      <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m14.5 5-7 7 7 7"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3.5" y="8" width="13" height="12" rx="2.5"/><path d="M7.5 5h10a3 3 0 0 1 3 3v8"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/></symbol>
+      <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M20 8H8a4 4 0 0 0-4 4v1M4 16h12a4 4 0 0 0 4-4v-1M17 5l3 3-3 3M7 13l-3 3 3 3"/></symbol>
+      <symbol id="i-exam" viewBox="0 0 24 24"><path d="M6 21V4M6 5h11.5l-2.5 4 2.5 4H6"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+      <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M12 3c3.5 1.5 5.5 5 5 9l-2.5 2.5h-5L7 12c-.5-4 1.5-7.5 5-9Z"/><circle cx="12" cy="9.5" r="1.6"/><path d="M9.5 14.5 7 17l2 .5.5 2 2.5-2.5M14.5 14.5 17 17l-2 .5-.5 2L12 17"/></symbol>
+      <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"/><path d="M5 19c2-4 5-7 9-9"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5V19c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5V5.5Z"/><path d="M12 6v13.5"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></symbol>
+      <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.8 6.8 19.6l1-5.8-4.3-4.1 5.9-.9L12 3.5Z"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z"/></symbol>
+      <symbol id="i-crown" viewBox="0 0 24 24"><path d="m4 8 4.5 4L12 6l3.5 6L20 8l-1.5 10h-13L4 8Z"/></symbol>
+      <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 17.5h6M10 20.5h4M12 3.5a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2h4c0-.8.4-1.5 1-2A6 6 0 0 0 12 3.5Z"/></symbol>
+      <symbol id="i-apps" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app" id="app">
+
+    <!-- ===================== Sidebar ===================== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="traffic" aria-hidden="true"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M5 20c4-8 8 8 11 0s7 8 11 0" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="9" r="3" fill="#fff"/></svg>
+        </span>
+        <span class="brand-name">StudyFlow</span>
+      </div>
+
+      <nav class="nav" id="nav" aria-label="Main"></nav>
+
+      <div class="side-foot">
+        <button class="mini-streak" data-action="go:achievements" title="Study streak">
+          <svg class="ic"><use href="#i-flame"/></svg><span><b id="miniStreak">0</b> day streak</span>
+        </button>
+        <button class="mini-timer" id="miniTimer" data-action="go:timer" title="Open focus timer">
+          <span class="mt-dot"></span>
+          <span class="mt-time" id="miniTime">25:00</span>
+          <span class="mt-mode" id="miniMode">Focus</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===================== Main ===================== -->
+    <main class="main">
+      <header class="toolbar">
+        <h1 id="viewTitle">Dashboard</h1>
+
+        <div class="search" role="search">
+          <svg class="ic"><use href="#i-search"/></svg>
+          <input id="search" type="text" placeholder="Search tasks, notes, pages…" autocomplete="off" spellcheck="false" aria-label="Search" aria-controls="results">
+          <kbd class="kbd-hint" id="kbdHint">⌘K</kbd>
+          <div class="results" id="results" role="listbox" hidden></div>
+        </div>
+
+        <div class="tb-right">
+          <button id="avatarBtn" class="avatar sm" data-action="go:settings" aria-label="Account and settings"></button>
+          <button id="themeBtn" class="icon-btn" aria-label="Toggle light / dark mode" title="Toggle light / dark (D)"><svg class="ic"><use href="#i-moon"/></svg></button>
+          <button id="addBtn" class="btn primary"><svg class="ic"><use href="#i-plus"/></svg><span>New Task</span></button>
+        </div>
+      </header>
+
+      <section class="view-host" id="viewHost" tabindex="-1" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <div class="modal-root" id="modalRoot" aria-hidden="true"></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+
+  <noscript><p style="position:fixed;inset:0;display:grid;place-items:center;font-family:system-ui">StudyFlow needs JavaScript to run.</p></noscript>
+  <script src="app.js"></script>
+  <script>if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(function () {});</script>
+</body>
+</html>

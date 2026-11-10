@@ -1,0 +1,3 @@
+{ "appId": "com.studyflow.app", "appName": "StudyFlow", "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "backgroundColor": "#f4f5fb" } }
